@@ -22,10 +22,10 @@ E_sum=np.zeros(shape = Restarts, dtype = 'float')
 
 for repeat in range(0, Restarts):
     print('========================================================\n')
-    print('MinMax k-means: Restart %d\n', repeat)
+    print(f'MinMax k-means: Restart {repeat+1}\n')
     
     #Randomly initialize the cluster centers.
-    M = utils.get_initial_clusters(X, k)
+    M = utils.get_initial_clusters(X, k, repeat)
     
     #Execute MinMax k-means.
     #Get the cluster assignments, the cluster centers and the cluster variances.
@@ -34,10 +34,10 @@ for repeat in range(0, Restarts):
     E_max[repeat]=max(Var)
     E_sum[repeat]=sum(Var)
 
-    print('End of Restart %d\n', repeat)
-    print('========================================================\n\n')
+    print(f'End of Restart {repeat+1}\n')
+    print('========================================================\n')
 
-#print('Average E_max score over %d restarts: %f.\n', Restarts, mean(E_max));
-#print('Average E_sum score over %d restarts: %f.\n', Restarts, mean(E_sum));
+print(f'Average E_max score over {Restarts+1} restarts: {E_max.mean()}.')
+print(f'Average E_sum score over {Restarts+1} restarts: {E_sum.mean()}.')
 
 # ---------------------------------------------------------
