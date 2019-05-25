@@ -2,6 +2,7 @@
 import math
 import numpy as np
 import scipy.spatial.distance as dist
+from sklearn.metrics.pairwise import euclidean_distances
 
 def MinMax_kmeans(X,M,k,p_init,p_max,p_step,t_max,beta):
     """ 
@@ -61,7 +62,7 @@ def MinMax_kmeans(X,M,k,p_init,p_max,p_step,t_max,beta):
 
     #Other initializations.
     p = p_init #Initial p value.
-    p_prev = p-10^(-8) #Dummy value.
+    p_prev = p-10**(-8) #Dummy value.
     empty = 0 #Count the number of iterations for which an empty or singleton cluster is detected.
     Iter = 1 #Number of iterations.
     E_w_old = math.inf #Previous iteration objective (used to check convergence).
@@ -122,16 +123,16 @@ def MinMax_kmeans(X,M,k,p_init,p_max,p_step,t_max,beta):
                     print('+++++++++++++++++++++++++++++++++++++++++\n')
                     
                     #Return NaN to indicate that no solution is produced.
-                    # Cluster_elem=NaN(1,size(X,1))
-                    # M=NaN(k,size(X,2))
-                    # Var=NaN(1,k)
+                    Cluster_elem.fill(np.nan)
+                    M.fill(np.nan)
+                    Var.fill(np.nan)
 
                     return Cluster_elem, M, Var
                 
                 #Continue from the assignments and the weights corresponding 
                 #to the decreased p value.
-                # Cluster_elem=Cluster_elem_history(empty,:)
-                # W=W_history(empty,:)
+                Cluster_elem=Cluster_elem_history[empty]
+                W=W_history[empty]
                 break
         
         if not math.isnan(E_w):

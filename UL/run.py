@@ -7,7 +7,7 @@ X, Y, N, d = utils.read_dataset('Coil2')
 # Algorithm parameters.
 # ---------------------
 k=3#number of clusters.
-p_init=0        #initial p.
+p_init=.5        #initial p.
 p_max=0.5       #maximum p.
 p_step=0.01     #p step.
 t_max=500       #maximum number of iterations.
