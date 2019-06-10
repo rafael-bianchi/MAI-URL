@@ -1,5 +1,13 @@
-import numpy as np
+import math
 import os
+import statistics
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from scipy.io.arff import loadarff
+from sklearn.preprocessing import MinMaxScaler
+
 
 def read_dataset(dataset_name):
     '''
@@ -15,15 +23,74 @@ def read_dataset(dataset_name):
     d -- number of features (dimension)
     '''
     root_dataset_folder = 'ul_project/datasets'
-    filename = os.path.join(root_dataset_folder, f'{dataset_name}.csv')
+    filename = os.path.join(root_dataset_folder, f'{dataset_name}')
 
-    dataset = np.genfromtxt(filename, delimiter=',')
+    ext = Path(filename).suffix
 
-    X = dataset[:, :-1]
-    Y = dataset[:, -1]
+    dataset = None
+    X = Y = None
+
+    if (ext == '.csv'):
+        dataset = np.genfromtxt(filename, delimiter=',')
+        X = dataset[:, :-1]
+        Y = dataset[:, -1]
+    else:
+        X, Y = read_arff(filename)
+
     N, d = X.shape
 
-    return X, Y, N, d
+    return X, Y, N, d, len(np.unique(Y))
+
+def read_arff(fileName):
+    raw_data, meta = loadarff(fileName)
+    x, y = pre_process_data(raw_data, meta)
+
+    return x, y
+
+def pre_process_data(raw_data, meta):
+    data = pd.DataFrame()
+
+    feature_names = meta.names()
+    for col_name, type_info in [(i, meta[i]) for i in feature_names[:-1]]:
+        if type_info[0] == "nominal":
+            if encode:
+                if (b'?' in raw_data[col_name]):
+                    val_mode = statistics.mode([val for val in raw_data[col_name] if val != b'?'])
+                    raw_data[col_name] = [val_mode if val == b'?' else val for val in raw_data[col_name]]
+
+                one_hot_encoded_data = one_hot_encode(
+                    [self._process_byte_string(val) for val in raw_data[col_name]],
+                    col_name
+                )
+                data = pd.concat([data, one_hot_encoded_data], axis=1, sort=False)
+            else:
+                data = pd.concat([
+                    data, 
+                    pd.Series(
+                        [_process_byte_string(val) for val in raw_data[col_name]],
+                        name=col_name
+                    ).astype('category')
+                ], axis=1, sort=False)
+
+        if type_info[0] == "numeric":
+            mean = statistics.mean([val for val in raw_data[col_name] if not math.isnan(val)])
+            data[col_name]= [mean if math.isnan(val) else val for val in raw_data[col_name]]
+
+    target_class_name = feature_names[-1]
+    target_class = pd.Series(
+        [_process_byte_string(val) for val in raw_data[target_class_name]],
+        name=target_class_name
+    ).astype('category').cat.codes
+
+    scaled_values = MinMaxScaler().fit_transform(data.values.astype(float))
+    normalized = pd.DataFrame(data=scaled_values, columns=data.columns)
+    return normalized.to_numpy(), target_class.to_numpy()
+
+def _process_byte_string(bstring):
+    return bstring.decode("utf-8").strip("'")
+
+def one_hot_encode(data, prefix=""):
+    return pd.get_dummies(data, prefix=prefix)
 
 def get_initial_clusters(X, k, iter=0):
     '''

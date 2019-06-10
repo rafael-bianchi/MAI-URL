@@ -1,10 +1,11 @@
-
 import math
+
 import numpy as np
 import scipy.spatial.distance as dist
+
 from sklearn.metrics.pairwise import euclidean_distances
 
-def MinMax_kmeans(X,M,k,p_init,p_max,p_step,t_max,beta):
+def MinMax_kmeans(X, M, k, p_init, p_max, p_step, t_max, beta, debug = True):
     """ 
     This function implements the MinMax k-means algorithm as described in  
     G.Tzortzis and A.Likas, "The MinMax k-means Clustering Algorithm", Pattern Recognition, 2014.
@@ -55,7 +56,6 @@ def MinMax_kmeans(X,M,k,p_init,p_max,p_step,t_max,beta):
     else:
         p_flag=1 #p_flag indicates whether p will be increased during the iterations.
 
-    pass
     # #--------------------------------------------------------------------------
     # #Weights are uniformly initialized.
     W=np.ones(shape=k)/k 
@@ -64,15 +64,16 @@ def MinMax_kmeans(X,M,k,p_init,p_max,p_step,t_max,beta):
     p = p_init #Initial p value.
     p_prev = p-10**(-8) #Dummy value.
     empty = 0 #Count the number of iterations for which an empty or singleton cluster is detected.
-    Iter = 1 #Number of iterations.
+    Iter = 0 #Number of iterations.
     E_w_old = math.inf #Previous iteration objective (used to check convergence).
     Var = np.zeros(k)
     Cluster_elem_history = []
     W_history = []
 
     #--------------------------------------------------------------------------
-    print('\nStart of MinMax k-means iterations')
-    print('----------------------------------\n')
+    if debug:
+        print('\nStart of MinMax k-means iterations')
+        print('----------------------------------\n')
 
     #Calculate the squared Euclidean distances between the instances and the
     #initial cluster centers.    
@@ -97,8 +98,9 @@ def MinMax_kmeans(X,M,k,p_init,p_max,p_step,t_max,beta):
         for i in range(0,k): 
             I = np.where(Cluster_elem == i)
             if I[0].size <= 1:
-                print(f'Empty or singleton clusters detected for p={p}.')
-                print('Reverting to previous p value.\n')           
+                if debug:
+                    print(f'Empty or singleton clusters detected for p={p}.')
+                    print('Reverting to previous p value.\n')           
                 
                 E_w = math.nan #Current objective undefined.
                 empty = empty+1
@@ -115,12 +117,13 @@ def MinMax_kmeans(X,M,k,p_init,p_max,p_step,t_max,beta):
                 p_flag = 0 #Never increase p again.
                                     
                 #p is not allowed to drop out of the given range.
-                if p < p_init or p_step == 0:                    
-                    print('+++++++++++++++++++++++++++++++++++++++++\n')
-                    print('p cannot be decreased further.')
-                    print('Either p_step=0 or p_init already reached.')
-                    print('Aborting Execution\n')
-                    print('+++++++++++++++++++++++++++++++++++++++++\n')
+                if p < p_init or p_step == 0:    
+                    if debug:                
+                        print('+++++++++++++++++++++++++++++++++++++++++\n')
+                        print('p cannot be decreased further.')
+                        print('Either p_step=0 or p_init already reached.')
+                        print('Aborting Execution\n')
+                        print('+++++++++++++++++++++++++++++++++++++++++\n')
                     
                     #Return NaN to indicate that no solution is produced.
                     Cluster_elem.fill(np.nan)
@@ -131,11 +134,11 @@ def MinMax_kmeans(X,M,k,p_init,p_max,p_step,t_max,beta):
                 
                 #Continue from the assignments and the weights corresponding 
                 #to the decreased p value.
-                Cluster_elem=Cluster_elem_history[empty]
-                W=W_history[empty]
+                Cluster_elem=Cluster_elem_history[empty-1]
+                W=W_history[empty-1]
                 break
         
-        if not math.isnan(E_w):
+        if not math.isnan(E_w) and debug:
             print(f'p={p}')
             print(f'The MinMax k-means objective is E_w={E_w}\n')
                     
@@ -147,12 +150,13 @@ def MinMax_kmeans(X,M,k,p_init,p_max,p_step,t_max,beta):
                 I = np.where(Cluster_elem == i)
                 Var[i] = np.sum(Dist[I,i])
             
-            print('\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n')
-            print(f'Converging for p={p} after {Iter} iterations.')               
-            print(f'The final MinMax k-means objective is E_w={E_w}.')       
-            print(f'The maximum cluster variance is E_max={max(Var)}.')
-            print(f'The sum of the cluster variances is E_sum={sum(Var)}.')
-            print('\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n')
+            if debug:
+                print('\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n')
+                print(f'Converging for p={p} after {Iter} iterations.')               
+                print(f'The final MinMax k-means objective is E_w={E_w}.')       
+                print(f'The maximum cluster variance is E_max={max(Var)}.')
+                print(f'The sum of the cluster variances is E_sum={sum(Var)}.')
+                print('\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n')
 
             return Cluster_elem, M, Var
 
@@ -177,7 +181,9 @@ def MinMax_kmeans(X,M,k,p_init,p_max,p_step,t_max,beta):
             if p >= p_max:
                 p = p_max
                 p_flag = 0
-                print('p_max reached\n')
+               
+                if debug:
+                    print('p_max reached\n')
             
         # #Recalculate the distances between the instances and the cluster centers.
         Dist = dist.cdist(X, M, 'sqeuclidean')
