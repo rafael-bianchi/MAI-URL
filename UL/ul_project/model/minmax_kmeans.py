@@ -134,8 +134,8 @@ def MinMax_kmeans(X, M, k, p_init, p_max, p_step, t_max, beta, debug = True):
                 
                 #Continue from the assignments and the weights corresponding 
                 #to the decreased p value.
-                Cluster_elem=Cluster_elem_history[empty-1]
-                W=W_history[empty-1]
+                Cluster_elem=Cluster_elem_history[empty*-1]
+                W=W_history[empty*-1]
                 break
         
         if not math.isnan(E_w) and debug:

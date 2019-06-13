@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from scipy.io.arff import loadarff
+from sklearn.datasets import make_blobs
 from sklearn.preprocessing import MinMaxScaler
 
 
@@ -22,6 +23,21 @@ def read_dataset(dataset_name):
     N -- Number of samples
     d -- number of features (dimension)
     '''
+
+    #Create an artificial dataset
+    if dataset_name == 'blob':
+        blob_data, blob_labels = make_blobs(n_samples=50000,
+                                            n_features=10,
+                                            centers=5,
+                                            cluster_std=.3)
+
+        scaled_values = MinMaxScaler().fit_transform(blob_data)
+
+        N, d = blob_data.shape
+
+        return scaled_values, blob_labels, N, d, len(np.unique(blob_labels))
+
+
     root_dataset_folder = 'ul_project/datasets'
     filename = os.path.join(root_dataset_folder, f'{dataset_name}')
 
@@ -118,4 +134,5 @@ def get_initial_clusters(X, k, iter=0):
     idxs = np.random.choice(X.shape[0], k, replace=False)
     M = X[idxs, :]
     #M = X[seed[iter], :]
+
     return M
