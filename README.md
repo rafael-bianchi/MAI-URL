@@ -1,4 +1,4 @@
-# Master of Artificial Intelligence - Unsupervised and Reinforcement Learning coursework
+## Master of Artificial Intelligence - Unsupervised and Reinforcement Learning coursework
 
 This is a python implementation fo the <b>The MinMax k-Means clustering algorithm</b>[[1]](#1) used for the coursework project for the [Unsupervised Learning](https://www.fib.upc.edu/en/studies/masters/master-artificial-intelligence/curriculum/syllabus/URL-MAI) at UPC.
 
